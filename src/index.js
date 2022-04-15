@@ -48,7 +48,8 @@ async function searchGallery(e) {
         loadMoreBtn.enable();
         loadMoreBtnHide(response.total);
         addCards(response.hits);
-    } catch (error){
+    } catch (error) {
+        clearGallery();
         Notiflix.Notify.failure(error.message);
     }    
     
