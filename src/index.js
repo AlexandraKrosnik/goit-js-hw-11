@@ -29,8 +29,7 @@ function openLightBox() {
 async function searchGallery(e) { 
     e.preventDefault();
 
-    loadMoreBtn.show();
-    loadMoreBtn.disable();  
+      
 
     cardGallery.query = e.target.elements.searchQuery.value;
     cardGallery.resetPage();
@@ -43,6 +42,8 @@ async function searchGallery(e) {
             throw new Error("Sorry, there are no images matching your search query. Please try again.")    
         }
         Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
+        loadMoreBtn.show();
+        loadMoreBtn.disable();
         clearGallery();
         loadMoreBtn.enable();
         loadMoreBtnHide(response.total);
