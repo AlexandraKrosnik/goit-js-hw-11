@@ -27,30 +27,30 @@ function openLightBox() {
 }
 
 async function searchGallery(e) { 
-    e.preventDefault();
-
-      
+    e.preventDefault();   
 
     cardGallery.query = e.target.elements.searchQuery.value;
     cardGallery.resetPage();
     cardGallery.resentAmount();
 
     try {
+        clearGallery(); 
+        loadMoreBtn.show();
+        loadMoreBtn.disable();
         const response = await cardGallery.fetchGallery();
         if (response.total === 0)
         {
             throw new Error("Sorry, there are no images matching your search query. Please try again.")    
-        }
-        Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
-        loadMoreBtn.show();
-        loadMoreBtn.disable();
-        clearGallery();
-        loadMoreBtn.enable();
+        }     
+                       
+        Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);        
         loadMoreBtnHide(response.total);
         addCards(response.hits);
-    } catch (error) {
-        clearGallery();
+        loadMoreBtn.enable();
+    } catch (error){
         Notiflix.Notify.failure(error.message);
+        loadMoreBtn.enable();
+        loadMoreBtn.hide();
     }    
     
 }
