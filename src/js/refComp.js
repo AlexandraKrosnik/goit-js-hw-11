@@ -1,4 +1,6 @@
 const ref = {
-    searchInput: document.querySelector(".search-input"),
-    searchButton: document.querySelector(".search-button")
+    searchForm: document.querySelector("#search-form"),
+    gallery: document.querySelector(".gallery"),
+    loadMore: document.querySelector(".load-more")
 }
+export default ref;
