@@ -1,52 +1,82 @@
 import './css/style.css';
-import axios from 'axios';
 import Notiflix from 'notiflix';
 import ref from './js/refComp';
 import galleryCard from './templates/galleryCard.hbs'
 import Gallery from './js/fetchAPI';
+import LoadMoreBtn from './js/loadMoreBtn';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+
+const cardGallery = new Gallery();
+const loadMoreBtn = new LoadMoreBtn({
+  selector: '[data-action="load-more"]',
+  hidden: true,
+});
+
 
 
 ref.searchForm.addEventListener("submit", searchGallery);
-ref.loadMore.addEventListener("click", onLoadMoreCard);
-const cardGallery = new Gallery();
+loadMoreBtn.refs.button.addEventListener('click', onLoadMoreCard);
 
-function searchGallery(e) {
-    ref.loadMore.classList.add("is-hidden");
+function openLightBox() {
+    new SimpleLightbox('.gallery a', {
+        captionDelay: 250,
+        captionsData: 'alt',
+        close: true,
+    });
+}
+
+async function searchGallery(e) { 
     e.preventDefault();
+
+    loadMoreBtn.show();
+    loadMoreBtn.disable();  
+
     cardGallery.query = e.target.elements.searchQuery.value;
     cardGallery.resetPage();
     cardGallery.resentAmount();
-    cardGallery.fetchGallery().then(data => {        
-        if (data.total === 0)
+
+    try {
+        const response = await cardGallery.fetchGallery();
+        if (response.total === 0)
         {
             throw new Error("Sorry, there are no images matching your search query. Please try again.")    
         }
-
-        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+        Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
         clearGallery();
-        addCards(data.hits);
-        ref.loadMore.classList.remove("is-hidden");        
-       
-    }).catch(error => Notiflix.Notify.failure(error.message)); 
+        loadMoreBtn.enable();
+        loadMoreBtnHide(response.total);
+        addCards(response.hits);
+    } catch (error){
+        Notiflix.Notify.failure(error.message);
+    }    
     
 }
-function addCards(arr) {
-    let cards = arr.map(galleryCard).join("");        
-        appendGallery(cards);
-        let lastCards = cardGallery.amountEl % 4;
-        styleGalerry(lastCards);
+
+async function onLoadMoreCard() {
+    loadMoreBtn.disable();   
+    const response = await cardGallery.fetchGallery();    
+    addCards(response.hits); 
+    loadMoreBtn.enable();
+    loadMoreBtnHide(response.total);
+    
 }
 
-function onLoadMoreCard() {
-    ref.loadMore.disable = true;    
-    cardGallery.fetchGallery().then(data => {
-        if (cardGallery.amountEl === data.total) {
-            ref.loadMore.classList.add("is-hidden");           
-        }
-        addCards(data.hits)
-    });
-    ref.loadMore.disable = false;
+
+function addCards(arr) {
+    let cards = arr.map(galleryCard).join("");        
+    appendGallery(cards);
+    let lastCards = cardGallery.amountEl % 4;
+    styleGalerry(lastCards);
+    openLightBox();
 }
+
+function loadMoreBtnHide(number) {
+    if (cardGallery.amountEl === number) {
+        loadMoreBtn.hide();         
+    }
+}
+
 
 function styleGalerry(number) {
     let elem = '';
@@ -60,4 +90,4 @@ function styleGalerry(number) {
 }
 let clearGallery =()=>ref.gallery.innerHTML = '';
 
-let appendGallery=(data)=>ref.gallery.insertAdjacentHTML("beforeend", data);
+let appendGallery=(data)=>ref.gallery.insertAdjacentHTML("beforeend", data)
