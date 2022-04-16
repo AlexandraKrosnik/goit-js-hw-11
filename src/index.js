@@ -14,9 +14,16 @@ const loadMoreBtn = new LoadMoreBtn({
 });
 
 
-
 ref.searchForm.addEventListener("submit", searchGallery);
 loadMoreBtn.refs.button.addEventListener('click', onLoadMoreCard);
+
+/*---------INFINITE scrolling-------*/
+/*window.addEventListener('scroll',()=>{    
+    if(window.scrollY + window.innerHeight >= 
+        document.documentElement.scrollHeight){
+        onLoadMoreCard();
+    }
+})*/
 
 function openLightBox() {
     new SimpleLightbox('.gallery a', {
@@ -46,6 +53,7 @@ async function searchGallery(e) {
         Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);        
         loadMoreBtnHide(response.total);
         addCards(response.hits);
+        scrollSmothly();
         loadMoreBtn.enable();
     } catch (error){
         Notiflix.Notify.failure(error.message);
@@ -59,9 +67,23 @@ async function onLoadMoreCard() {
     loadMoreBtn.disable();   
     const response = await cardGallery.fetchGallery();    
     addCards(response.hits); 
+    scrollSmothly();
     loadMoreBtn.enable();
     loadMoreBtnHide(response.total);
     
+}
+
+
+
+function scrollSmothly() {
+     const { height: cardHeight } = document
+            .querySelector(".gallery")
+            .firstElementChild.getBoundingClientRect();
+
+        window.scrollBy({
+            top: cardHeight * (cardGallery.amountEl / 4),
+            behavior: "smooth",
+        });
 }
 
 
